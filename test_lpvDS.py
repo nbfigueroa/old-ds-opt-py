@@ -1,12 +1,12 @@
-from dynamicalsystems import *
+from nonlinear_ds import *
 import numpy as np
 import numpy.linalg as LA
 from numpy import pi
 import matplotlib.pyplot as plt
 
 n_grid = 100
-x_lim = [-0.5, 0.5]
-y_lim = [-0.5, 0.5]
+x_lim = [-1, 0.25]
+y_lim = [-0.5, 0.25]
 dim = 2 
 ds_lpv1 = np.zeros((dim, n_grid, n_grid))
 pos = np.zeros((dim, n_grid, n_grid))
