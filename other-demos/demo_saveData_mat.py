@@ -25,8 +25,9 @@ if __name__ == '__main__':
     plt.title('Draw trajectories to learn a motion policy:',fontsize=15)
           
     # Load trajectories from file and plot
-    dir_name  = '../data/'    
+    dir_name  = './data/'    
     data_name = 'human_demonstrated_trajectories'
+    # data_name = 'human_demonstrated_trajectories_Mar22_23:36:59'
     
     file_name = dir_name + data_name + '.dat'
     l,t,x,y   = mt.load_trajectories(file_name)

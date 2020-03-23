@@ -35,6 +35,8 @@ dataset_name = strcat(pkg_dir,'/data/human_demonstrated_trajectories.mat');
 dataset_name = strcat(pkg_dir,'/data/human_demonstrated_trajectories_Mar22_22:33:43.mat');
 % dataset_name = strcat(pkg_dir,'/data/human_demonstrated_trajectories_Mar23_02:01:22.mat');
 
+dataset_name = strcat(pkg_dir,'/other-demos/data/human_demonstrated_trajectories_Mar22_23:06:56.mat');
+
 % Load and process drawn datasets from python GUI
 sub_sample    = 1; 
 [demos, data] = load_datasets_python(dataset_name, sub_sample);
@@ -80,7 +82,7 @@ est_options.samplerIter      = 100;  % Maximum Sampler Iterations
                                     % For type 2: >100 iter are needed
                                     
 est_options.do_plots         = 1;   % Plot Estimation Statistics
-est_options.sub_sample       = 2;   % Size of sub-sampling of trajectories
+est_options.sub_sample       = 1;   % Size of sub-sampling of trajectories
                                     % 1/2 for 2D datasets, >2/3 for real    
 % Metric Hyper-parameters
 est_options.estimate_l       = 1;   % '0/1' Estimate the lengthscale, if set to 1
@@ -174,7 +176,7 @@ else
 end
 
 %%% Name to store DS %%%
-DS_name = 'test1';
+DS_name = 'test1-obst';
 
 %% %%%%%%%%%%%%    Plot Resulting DS  %%%%%%%%%%%%%%%%%%%
 % Fill in plotting options

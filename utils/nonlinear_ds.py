@@ -119,10 +119,44 @@ class lpv_DS(DynamicalSystem):
             x_dot[:,i] = f_g
 
         # Allow transformation of DS
-        # self.transform_ds(x_dot)
-           
+        # self.transform_ds(x_dot)           
         return x_dot.squeeze()
+    
+    def posterior_probs_gmm(self, x, normalization_type='norm'):
+        n_datapoints = np.array(x).shape[1]
 
+        # Compute mixing weights for multiple dynamics
+        Px_k = np.zeros((self.n_gaussians, n_datapoints))
+
+        # Compute probabilities p(x^i|k)
+        for k in range(self.n_gaussians):
+            
+            Px_k[k,:] = self.gaussPDF(x, self.Mu[:,k], self.Sigma[:,:,k]) + REALMIN
+
+        ### Compute posterior probabilities p(k|x) -- FAST WAY --- ###
+        alpha_Px_k = np.tile(self.Priors.T, (1, n_datapoints))*Px_k
+
+        if normalization_type=='norm':
+            Pk_x = alpha_Px_k / np.tile(np.sum(alpha_Px_k, axis=0), (self.n_gaussians, 1))
+        elif normalization_type=='un-norm':
+            Pk_x = alpha_Px_k
+
+        return Pk_x
+
+
+    def gaussPDF(self, Data, Mu, Sigma):
+        n_datapoints = np.array(Data).shape[1]
+        if n_datapoints>1:
+            warnings.warn("WARNING --- Check tile")
+
+        Mus  = np.tile(Mu, (n_datapoints, 1)).T
+        Data = (Data - Mus)
+        # Data = (N x D)
+        # (N x 1)
+        prob = np.sum((Data.T.dot(LA.inv(Sigma))).dot(Data), axis=1)            
+        prob = np.exp(-0.5*prob) / np.sqrt((2*pi)**self.n_dimensions * (np.abs(LA.det(Sigma))+REALMIN)) + REALMIN
+
+        return prob
 
     def set_transform_ds(self, rotation=None, strecthing=None, translation=None):
         if rotation==None:
@@ -144,77 +178,3 @@ class lpv_DS(DynamicalSystem):
     def transform_ds(self, x_dot):
         # x_dot as reference!
         x_dot = self.rotation*(self.stretching*(self.translation+x_dot))
-        
-
-    def posterior_probs_gmm(self, x, normalization_type='norm'):
-        n_datapoints = np.array(x).shape[1]
-
-        # Compute mixing weights for multiple dynamics
-        Px_k = np.zeros((self.n_gaussians, n_datapoints))
-
-        # Compute probabilities p(x^i|k)
-        for k in range(self.n_gaussians):
-            
-            Px_k[k,:] = self.ml_gaussPDF(x, self.Mu[:,k], self.Sigma[:,:,k]) + REALMIN
-
-        ### Compute posterior probabilities p(k|x) -- FAST WAY --- ###
-        alpha_Px_k = np.tile(self.Priors.T, (1, n_datapoints))*Px_k
-
-        if normalization_type=='norm':
-            Pk_x = alpha_Px_k / np.tile(np.sum(alpha_Px_k, axis=0), (self.n_gaussians, 1))
-        elif normalization_type=='un-norm':
-            Pk_x = alpha_Px_k
-
-        return Pk_x
-
-
-    def ml_gaussPDF(self, Data, Mu, Sigma):
-        #ML_GAUSSPDF
-        # This def computes the Probability Density Def (PDF) of a
-        # multivariate Gaussian represented by means and covariance matrix.
-        #
-        # Author:	Sylvain Calinon, 2009
-        #			http://programming-by-demonstration.org
-        #
-        # Inputs -----------------------------------------------------------------
-        #   o Data:  D x N array representing N datapoints of D dimensions.
-        #   o Mu:    D x 1 array representing the centers of the K GMM components.
-        #   o Sigma: D x D x 1 array representing the covariance matrices of the 
-        #            K GMM components.
-        # Outputs ----------------------------------------------------------------
-        #   o prob:  1 x N array representing the probabilities for the 
-        #            N datapoints.     
-        # (nbVar,notate) = np.array(Data).shape
-
-        #      (D x N) - repmat((D x 1),1,N)
-        #      (D x N) - (D x N)
-        n_datapoints = np.array(Data).shape[1]
-
-        if n_datapoints>1:
-            warnings.warn("WARNING --- Check tile")
-
-        Mus  = np.tile(Mu, (n_datapoints, 1)).T
-        Data = (Data - Mus)
-
-        # Data = (N x D)
-        # (N x 1)
-
-        prob = np.sum((Data.T.dot(LA.inv(Sigma))).dot(Data), axis=1)
-        
-        
-        prob = np.exp(-0.5*prob) / np.sqrt((2*pi)**self.n_dimensions * (np.abs(LA.det(Sigma))+REALMIN)) + REALMIN
-
-        return prob
-
-
-
-# if __name__=="__main__":
-#     print("Example simulation")
-
-#     import_dir = "./models/"
-#     import_file = "record_ft_a_v3_ds0.yml"
-#     lvp_ds = []
-#     lvp_ds.append(lpv_DS(filename=import_dir+import_file))
-#     x = np.array([[1],
-#                   [3]])
-#     lvp_ds[0].get_ds(x)
