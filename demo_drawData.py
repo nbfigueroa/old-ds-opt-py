@@ -37,8 +37,9 @@ if __name__ == '__main__':
 
 
     # Calling class to draw data on top of environment
-    indexing  = 1 # Set to 1, if you the snaps/data to be indexed with current time-stamp
-    draw_data = MouseTrajectory(points, indexing)
+    indexing  = 1 # Set to 1 if you the snaps/data to be indexed with current time-stamp
+    store_mat = 0 # Set to 1 if you want to store data in .mat structure for MATLAB
+    draw_data = MouseTrajectory(points, indexing, store_mat)
     draw_data.connect()
     bstore.on_clicked(draw_data.store_callback)
     bclear.on_clicked(draw_data.clear_callback)

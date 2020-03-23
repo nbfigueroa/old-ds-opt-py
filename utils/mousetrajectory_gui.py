@@ -2,10 +2,11 @@ from __future__ import print_function
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.io as sio
 
 class MouseTrajectory:
     lock = None 
-    def __init__(self, points, indexing=0, data_dir='./data/', snaps_dir='./snaps/'):
+    def __init__(self, points, indexing=0, store_mat = 0, data_dir='./data/', snaps_dir='./snaps/'):
         self.press      = None
         self.background = None
         self.points     = points
@@ -16,6 +17,7 @@ class MouseTrajectory:
         self.label      = 0
         self.t0         = 0
         self.indexing   = indexing
+        self.store_mat  = store_mat
         self.data_dir   = data_dir
         self.snaps_dir  = snaps_dir
 
@@ -150,17 +152,34 @@ class MouseTrajectory:
         store the recorded trajectories in pickle file
         '''
         print('Saving data to file')
+
+        data_name = 'human_demonstrated_trajectories'
+        time_str  = time.strftime("%b%d_%H:%M:%S", time.gmtime())
+
         # If indexing set to 1, time-index will be added to figure name
         if self.indexing == 1:
-            file_name = '%shuman_demonstrated_trajectories_%s.dat'% (self.data_dir, time.strftime("%b%d_%H:%M:%S", time.gmtime()))
+            file_name = self.data_dir + data_name + '_' + time_str + '.dat'
         else:
-            file_name = '%shuman_demonstrated_trajectories.dat'% (self.data_dir)
+            file_name = self.data_dir + data_name + '.dat'
         
         header = "# l, t, x, y\n"        
         with open(file_name, 'w') as f:
             f.write(header)
             for i in range(len(self.l_data)):
                 f.write('{:d} {:.4f} {:.4f} {:.4f}\n'.format(self.l_data[i], self.t_data[i], self.x_data[i], self.y_data[i]))
+
+        if self.store_mat == 1:        
+            # Create a dictionary
+            adict = {}
+            adict['labels']      = self.l_data
+            adict['time-stamps'] = self.t_data
+            adict['x-coords']    = self.x_data
+            adict['y-coords']    = self.y_data
+            if self.indexing == 1:
+                file_name = self.data_dir + data_name + '_' + time_str + '.mat'
+            else:
+                file_name = self.data_dir + data_name + '.mat'
+            sio.savemat(file_name, adict)
 
         # Fast numpy-way, can't modify format though        
         # demos = np.column_stack((self.t_data, self.x_data, self.y_data))
