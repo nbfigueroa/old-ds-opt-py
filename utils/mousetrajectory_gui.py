@@ -43,7 +43,7 @@ class MouseTrajectory:
         self.t_data.append(t)
         self.l_data.append(self.label)
 
-        print('l=%d, t=%1.5f, x=%1.2f, y=%1.2f' % (self.label, t, x, y))
+        # print('l=%d, t=%1.5f, x=%1.2f, y=%1.2f' % (self.label, t, x, y))
         self.press = x, y
         MouseTrajectory.lock = self
 
@@ -75,7 +75,7 @@ class MouseTrajectory:
         t = self.t0 - time.time()
 
         # For debugging
-        print('l=%d, t=%1.5f, x=%1.2f, y=%1.2f' % (self.label, t, x, y))
+        # print('l=%d, t=%1.5f, x=%1.2f, y=%1.2f' % (self.label, t, x, y))
 
         # Stores trajectories
         self.x_data.append(x)
