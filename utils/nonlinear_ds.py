@@ -1,5 +1,3 @@
-#!/usr/bin/env python2
-
 import numpy as np
 import numpy.linalg as LA
 from numpy import pi
@@ -28,27 +26,44 @@ class lpv_DS(DynamicalSystem):
         if len(filename):
             yaml_dict = yaml.load(open(filename))
 
+            # Parse lpv-ds variables
             self.n_gaussians = int(yaml_dict['K'])
+            print('K=',self.n_gaussians)
+            
             self.n_dimensions = int(yaml_dict['M'])
+            print('M=',self.n_dimensions)
 
             self.Mu = np.reshape(yaml_dict['Mu'], (self.n_dimensions, self.n_gaussians), order=order_type)
+            print('Mu=',self.Mu)
+            
             self.Priors = np.array(yaml_dict['Priors'])
+            print('Priors=',self.Priors)
+            
             self.Sigma = np.reshape(yaml_dict['Sigma'], (self.n_dimensions, self.n_dimensions, self.n_gaussians), order=order_type)
-
+            print('Sigma=',self.Sigma)
+            
             self.A_g = np.reshape(yaml_dict['A'], (self.n_dimensions, self.n_dimensions, self.n_gaussians), order=order_type)
+            print('A=',self.Sigma)
 
+            self.attractor = np.array(yaml_dict['attractor'])
+            print('attractor=', self.attractor)
+
+            self.starting_point_teaching = np.reshape(yaml_dict['x0_all'], (self.n_dimensions, -1), order=order_type)
+            print('x0_all=',self.starting_point_teaching)
+
+
+            # Auxiliary variables
             if hasattr(yaml_dict, 'b'):
                 self.b_g = np.reshape(yaml_dict['b'], (self.n_dimensions, self.n_gaussians), order=order_type)
             else:
                 self.b_g = np.zeros((self.n_dimensions, self.n_gaussians))    
-
-            self.starting_point_teaching = np.reshape(yaml_dict['x0_all'], (self.n_dimensions, -1), order=order_type)
+                for k in range(self.n_gaussians):
+                    self.b_g[:,k] = -self.A_g[:,:,k].dot(self.attractor)
+            
+            print('b=',self.b_g)
             self.mean_starting_point = np.mean(self.starting_point_teaching, axis=1)
+            
 
-            self.attractor = yaml_dict['attractor']
-
-            # print("TODO -- import lvpDS from file")
-            # import pdb; pdb.set_trace() # DEBUG
         else:
             # TODO - check values
             self.A_g = A_g

@@ -26,11 +26,9 @@ if __name__ == '__main__':
           
     # Load trajectories from file and plot
     dir_name  = '../data/'    
-    extension = '.dat'
-
     data_name = 'human_demonstrated_trajectories'
     
-    file_name = dir_name + data_name + extension
+    file_name = dir_name + data_name + '.dat'
     l,t,x,y   = mt.load_trajectories(file_name)
     ax.plot(x, y, 'ro', markersize=2, lw=2)
 
@@ -40,8 +38,8 @@ if __name__ == '__main__':
     # Create a dictionary
     adict = {}
     adict['labels']      = l
-    adict['time-stamps'] = t
-    adict['x-coords']    = x
-    adict['y-coords']    = y
+    adict['timestamps'] = t
+    adict['x']    = x
+    adict['y']    = y
     file_name = dir_name + data_name + '.mat'
     sio.savemat(file_name, adict)

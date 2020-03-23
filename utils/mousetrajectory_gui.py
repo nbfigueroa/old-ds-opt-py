@@ -74,7 +74,7 @@ class MouseTrajectory:
 
         x = event.xdata
         y = event.ydata
-        t = self.t0 - time.time()
+        t = time.time() - self.t0
 
         # For debugging
         # print('l=%d, t=%1.5f, x=%1.2f, y=%1.2f' % (self.label, t, x, y))

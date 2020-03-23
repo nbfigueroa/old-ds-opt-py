@@ -21,7 +21,7 @@ if __name__ == '__main__':
     plt.gca().set_aspect('equal', adjustable='box')
     plt.xlabel('$x_1$',fontsize=15)
     plt.ylabel('$x_2$',fontsize=15)
-    plt.title('Draw trajectories to learn a motion policy:',fontsize=15)
+    plt.title('Trajectories drawn by human with mouse GUI:',fontsize=15)
           
     # Load trajectories from file and plot
     file_name = './data/human_demonstrated_trajectories.dat'

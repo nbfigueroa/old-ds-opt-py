@@ -1,32 +1,51 @@
 from nonlinear_ds import *
 import numpy as np
 import numpy.linalg as LA
-from numpy import pi
 import matplotlib.pyplot as plt
+from matplotlib import rc
+import mousetrajectory_gui as mt
 
-n_grid = 100
-x_lim = [-1, 0.25]
-y_lim = [-0.5, 0.25]
-dim = 2 
-ds_lpv1 = np.zeros((dim, n_grid, n_grid))
-pos = np.zeros((dim, n_grid, n_grid))
+rc('font',**{'family':'serif','serif':['Times']})
+rc('text', usetex=True)
 
-x_vals = np.linspace(x_lim[0], x_lim[1], n_grid)
-y_vals = np.linspace(y_lim[0], y_lim[1], n_grid)
+'''
+ Brings up an empty world environment with the drawn trajectories using MouseTrajectory GUI
+ and the learned LPV-DS model
+'''
 
-import_dir = "./models/"
-import_file = "record_ft_a_v3_ds0.yml"
-lpv_ds_func1 = lpv_DS(filename=import_dir+import_file)
+if __name__ == '__main__':
 
-# Create figure/environment to draw trajectories on
-# fig, ax = plt.subplots()
-# plt.subplots_adjust(bottom=0.2)  
-for ix in range(n_grid):
-    for iy in range(n_grid):
-        pos[:,ix,iy] = [x_vals[ix], y_vals[iy]]
-        ds_lpv1[:,ix,iy] = lpv_ds_func1.get_ds(pos[:,ix,iy])
+    # Create figure/environment to draw trajectories on
+    fig, ax = plt.subplots()
+    plt.subplots_adjust(bottom=0.2)    
+    ax.set_xlim(-0.25, 1.25)
+    ax.set_ylim(0, 1)
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.xlabel('$x_1$',fontsize=15)
+    plt.ylabel('$x_2$',fontsize=15)
+    plt.title('LPV-DS learned from drawn trajectories:',fontsize=15)
+          
+    # Load trajectories from file and plot
+    models_dir = './models/'
+    model_name = 'test1.yml'
+    lpv_ds = lpv_DS(filename=models_dir+model_name,order_type='F')
+    
+    # Draw vector field from learned lpv-ds
+    grid = 40
+    for i in np.linspace(-0.25, 1.25, grid):
+    	for j in np.linspace(0, 1, grid):
+    		x          = np.array([i, j])
+    		x_dot      = lpv_ds.get_ds(x)
+    		x_dot_norm = x_dot/LA.norm(x_dot) * 0.02
+    		plt.arrow(i, j, x_dot_norm[0], x_dot_norm[1], 
+				head_width=0.008, head_length=0.01)    
 
-# plt.ion()
-plt.subplots()
-plt.quiver(pos[0,:,:], pos[1,:,:], ds_lpv1[0,:,:], ds_lpv1[1,:,:])
-plt.show()
+    file_name = './data/human_demonstrated_trajectories.dat'
+    l,t,x,y   = mt.load_trajectories(file_name)
+    ax.plot(x, y, 'ro', markersize=2, lw=2)
+
+    # Show
+    plt.show()
+
+    
+
