@@ -86,33 +86,6 @@ if __name__ == '__main__':
         sim_tol    = 0.005 
         x_sim      = ds_eulerIntegration(ds_fun, dt, x0_all, attractor, max_iter, sim_tol)
 
-    if show_vector_field:
-        ######################################################################
-        #   Draw vector field from learned lpv-ds with quiver-like function  #
-        ######################################################################
-        # Create figure/environment to draw trajectories on
-        fig0, ax0 = plt.subplots()
-        ax0.set_xlim(-0.25, 1.25)
-        ax0.set_ylim(0, 1)
-        plt.gca().set_aspect('equal', adjustable='box')
-        plt.xlabel('$x_1$',fontsize=15)
-        plt.ylabel('$x_2$',fontsize=15)
-        plt.title('LPV-DS learned from drawn trajectories:',fontsize=15)
-           
-        # Add vector field from learned LPV-DS
-        grid_size = 40
-        for i in np.linspace(-0.25, 1.25, grid_size):
-            for j in np.linspace(0, 1, grid_size):
-                x_query    = np.array([i, j])
-                x_dot      = lpv_ds.get_ds(x_query)
-                x_dot_norm = x_dot/LA.norm(x_dot) * 0.02
-                plt.arrow(i, j, x_dot_norm[0], x_dot_norm[1], 
-                    head_width=0.008, head_length=0.01)    
-
-        # Add trajectories used to learn DS       
-        ax0.plot(x, y, 'ro', markersize=2, lw=2)
-        ax0.plot(attractor[0], attractor[1], 'md', markersize=12, lw=2)
-        ax0.plot(x0_all[0,:], x0_all[1,:], 'gs', markersize=10, lw=2)
 
     if show_stream_lines:
         ######################################################################
@@ -154,6 +127,33 @@ if __name__ == '__main__':
             ax1.plot(x_sim[0][idx,:], x_sim[0][idx+1,:], 'bo', markersize=2, lw=2)
             idx=idx+dim
 
+    if show_vector_field:
+        ######################################################################
+        #   Draw vector field from learned lpv-ds with quiver-like function  #
+        ######################################################################
+        # Create figure/environment to draw trajectories on
+        fig0, ax0 = plt.subplots()
+        ax0.set_xlim(-0.25, 1.25)
+        ax0.set_ylim(0, 1)
+        plt.gca().set_aspect('equal', adjustable='box')
+        plt.xlabel('$x_1$',fontsize=15)
+        plt.ylabel('$x_2$',fontsize=15)
+        plt.title('LPV-DS learned from drawn trajectories:',fontsize=15)
+           
+        # Add vector field from learned LPV-DS
+        grid_size = 40
+        for i in np.linspace(-0.25, 1.25, grid_size):
+            for j in np.linspace(0, 1, grid_size):
+                x_query    = np.array([i, j])
+                x_dot      = lpv_ds.get_ds(x_query)
+                x_dot_norm = x_dot/LA.norm(x_dot) * 0.02
+                plt.arrow(i, j, x_dot_norm[0], x_dot_norm[1], 
+                    head_width=0.008, head_length=0.01)    
+
+        # Add trajectories used to learn DS       
+        ax0.plot(x, y, 'ro', markersize=2, lw=2)
+        ax0.plot(attractor[0], attractor[1], 'md', markersize=12, lw=2)
+        ax0.plot(x0_all[0,:], x0_all[1,:], 'gs', markersize=10, lw=2)
 
     # Show
     plt.show()

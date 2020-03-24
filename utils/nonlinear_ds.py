@@ -55,8 +55,7 @@ class lpv_DS(DynamicalSystem):
                 print('b=',self.b_g)
                 print('attractor=', self.attractor)
                 print('x0_all=',self.x0_all)
-                print('dt=',self.dt)
-        
+                print('dt=',self.dt)        
         else:
 
             # LPV-DS variables
@@ -92,7 +91,6 @@ class lpv_DS(DynamicalSystem):
 
     def is_attractor_reached(self, x, margin_attr=0.1):
         return np.sqrt((x-self.attractor)**2) < margin_attr 
-    
 
     
     def get_ds(self, x, normalization_type='norm'):
