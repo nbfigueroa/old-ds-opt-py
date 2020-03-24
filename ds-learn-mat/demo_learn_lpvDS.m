@@ -35,7 +35,7 @@ dataset_name = strcat(pkg_dir,'/data/human_demonstrated_trajectories.mat');
 dataset_name = strcat(pkg_dir,'/data/human_demonstrated_trajectories_Mar22_22:33:43.mat');
 % dataset_name = strcat(pkg_dir,'/data/human_demonstrated_trajectories_Mar23_02:01:22.mat');
 
-dataset_name = strcat(pkg_dir,'/other-demos/data/human_demonstrated_trajectories_Mar22_23:06:56.mat');
+% dataset_name = strcat(pkg_dir,'/other-demos/data/human_demonstrated_trajectories_Mar22_23:06:56.mat');
 
 % Load and process drawn datasets from python GUI
 sub_sample    = 1; 
@@ -139,12 +139,12 @@ else
     % P-matrix learning
     P_learn = 1;
     if P_learn == 1
-    %     [Vxf] = learn_wsaqf(Data,0,att);
+        [Vxf] = learn_wsaqf(Data,0,att);
 
         % (Data shifted to the origin)
         % Assuming origin is the attractor (works better generally)
-        [Vxf] = learn_wsaqf(Data_sh);
-        P_opt = Vxf.P;
+%         [Vxf] = learn_wsaqf(Data_sh);
+%         P_opt = Vxf.P;
 
     else
         % Testing this idea
@@ -176,7 +176,7 @@ else
 end
 
 %%% Name to store DS %%%
-DS_name = 'test1-obst';
+DS_name = 'test2';
 
 %% %%%%%%%%%%%%    Plot Resulting DS  %%%%%%%%%%%%%%%%%%%
 % Fill in plotting options
@@ -256,7 +256,7 @@ dlmwrite(strcat(model_dir,'xi_dot'), xd_dot, 'newline','unix','Delimiter',' ','p
 %%     Step 5 (Optional - Stability Check 2D-only): Plot Lyapunov Function and derivative  %%
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Type of plot
-contour = 1; % 0: surf, 1: contour
+contour = 0; % 0: surf, 1: contour
 clear lyap_fun_comb lyap_der 
 
 switch constr_type
