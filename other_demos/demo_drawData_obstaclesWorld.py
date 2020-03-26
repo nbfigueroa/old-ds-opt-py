@@ -1,10 +1,11 @@
+from __future__ import absolute_import
 from __future__ import print_function
 import time
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc
 from matplotlib.widgets import Button
-from mousetrajectory_gui import MouseTrajectory
+from ds_tools.mousetrajectory_gui import MouseTrajectory
 
 rc('font',**{'family':'serif','serif':['Times']})
 rc('text', usetex=True)

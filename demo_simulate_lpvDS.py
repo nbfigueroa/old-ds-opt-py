@@ -3,8 +3,14 @@ import numpy.linalg as LA
 import matplotlib.pyplot as plt
 from matplotlib import rc
 
+# Dynamical System Tools
 from ds_tools.nonlinear_ds import *
 import ds_tools.mousetrajectory_gui as mt
+
+# ODE integration from pytorch (will only work with python-3)
+import sys
+if sys.version_info.major == 3:
+    from torchdiffeq import odeint
 
 rc('font',**{'family':'serif','serif':['Times']})
 rc('text', usetex=True)

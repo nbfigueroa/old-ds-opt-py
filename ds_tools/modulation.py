@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+#!/usr/bin/env python3
+
 from __future__ import division
 import numpy as np
 from sklearn.preprocessing import normalize

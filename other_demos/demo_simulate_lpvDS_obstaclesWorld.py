@@ -1,10 +1,11 @@
-from nonlinear_ds import *
 import numpy as np
 import numpy.linalg as LA
 import matplotlib.pyplot as plt
 from matplotlib import rc
-import mousetrajectory_gui as mt
 import matplotlib.gridspec as gridspec
+
+import ds_tools.mousetrajectory_gui as mt
+from ds_tools.nonlinear_ds import *
 
 rc('font',**{'family':'serif','serif':['Times']})
 rc('text', usetex=True)

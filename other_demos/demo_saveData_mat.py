@@ -2,7 +2,7 @@ from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc
-import mousetrajectory_gui as mt
+import ds_tools.mousetrajectory_gui as mt
 import scipy.io as sio
 
 rc('font',**{'family':'serif','serif':['Times']})
@@ -26,8 +26,8 @@ if __name__ == '__main__':
           
     # Load trajectories from file and plot
     dir_name  = './data/'    
-    data_name = 'human_demonstrated_trajectories'
-    # data_name = 'human_demonstrated_trajectories_Mar22_23:36:59'
+    # data_name = 'human_demonstrated_trajectories'
+    data_name = 'human_demonstrated_trajectories_Mar22_23:36:59'
     
     file_name = dir_name + data_name + '.dat'
     l,t,x,y   = mt.load_trajectories(file_name)

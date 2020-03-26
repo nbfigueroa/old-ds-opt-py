@@ -9,6 +9,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+# To compare with my DS learning approach
+from ds_tools.nonlinear_ds import *
 
 def load_trajectories(file_name):
     '''reads trajectory data from a text file'''

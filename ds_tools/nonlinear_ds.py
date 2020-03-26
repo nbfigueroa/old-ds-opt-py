@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+#!/usr/bin/env python3
+
 import numpy as np
 import numpy.linalg as LA
 from numpy import pi
