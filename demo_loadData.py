@@ -2,7 +2,7 @@ from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc
-import mousetrajectory_gui as mt
+import ds_tools.mousetrajectory_gui as mt
 
 rc('font',**{'family':'serif','serif':['Times']})
 rc('text', usetex=True)

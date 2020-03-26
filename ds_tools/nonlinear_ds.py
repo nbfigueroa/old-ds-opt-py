@@ -72,26 +72,21 @@ class lpv_DS(DynamicalSystem):
         tF = time.time()
         print("Time to initialize {} s". format(tF-t0))
 
+    
+    def get_dt(self):
+        return self.dt
 
-    @property 
-    def dt(self):
-        return self.__dt
+    def get_x0all(self):
+        return self.x0_all
 
-    @property 
-    def x0_all(self):
-        return self.__x0_all
+    def get_attractor(self):
+        return self.attractor
 
-    @property 
-    def attractor(self):
-        return self.__attractor
-
-    @attractor.setter 
-    def attractor(self, attractor):
-        self.__attractor = attractor
+    def set_attractor(self, attractor):
+        self.attractor = attractor
 
     def is_attractor_reached(self, x, margin_attr=0.1):
         return np.sqrt((x-self.attractor)**2) < margin_attr 
-
     
     def get_ds(self, x, normalization_type='norm'):
         x = np.array(x)
