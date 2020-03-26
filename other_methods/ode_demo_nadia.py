@@ -51,7 +51,7 @@ else:
 
 device = torch.device('cuda:' + str(args.gpu) if torch.cuda.is_available() else 'cpu')
 
-demo_type = 0
+demo_type = 1
 if demo_type == 1:
     ####################################################
     ########## This is for the original demo ###########
@@ -78,7 +78,7 @@ else:
     ################################################################
     # Load trajectories from file and plot
     file_name = '../data/human_demonstrated_trajectories.dat'
-    # file_name = '../data/human_demonstrated_trajectories_Mar22_22:33:43.dat'
+    file_name = '../data/human_demonstrated_trajectories_Mar22_22:33:43.dat'
     l_,t_,x_,y_   = load_trajectories(file_name)
 
     # Extract the first trajectory
@@ -115,7 +115,7 @@ def makedirs(dirname):
 
 
 if args.viz:
-    makedirs('png')
+    # makedirs('png')
     import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(12, 4), facecolor='white')
     ax_traj = fig.add_subplot(131, frameon=False)
@@ -157,17 +157,12 @@ def visualize(true_y, pred_y, odefunc, itr):
         ax_vecfield.set_ylabel('y')
 
         y, x = np.mgrid[-2:2:21j, -2:2:21j]
-        print(x.shape)
-        print(y.shape)
         dydt = odefunc(0, torch.Tensor(np.stack([x, y], -1).reshape(21 * 21, 2))).cpu().detach().numpy()
-        print(dydt.shape)
         mag = np.sqrt(dydt[:, 0]**2 + dydt[:, 1]**2).reshape(-1, 1)
         dydt = (dydt / mag)
         dydt = dydt.reshape(21, 21, 2)        
         u = dydt[:, :, 0]
         v = dydt[:, :, 1]
-        print(u.shape)
-        print(v.shape)
         ax_vecfield.streamplot(x, y, u, v, color="black")
         if demo_type == 1:
             ax_vecfield.set_xlim(-2, 2)
@@ -177,7 +172,7 @@ def visualize(true_y, pred_y, odefunc, itr):
             ax_vecfield.set_ylim(0, 1)
 
         fig.tight_layout()
-        plt.savefig('png/{:03d}'.format(itr))
+        # plt.savefig('png/{:03d}'.format(itr))
         plt.draw()
         plt.pause(0.001)
 
