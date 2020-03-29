@@ -38,32 +38,32 @@ parser = argparse.ArgumentParser('ODE demo')
 parser.add_argument('--method', type=str, choices=['dopri5', 'adams'], default='dopri5')
 parser.add_argument('--data_size', type=int, default=1000)    
 parser.add_argument('--batch_time', type=int, default=10)
-parser.add_argument('--batch_size', type=int, default=20)
-parser.add_argument('--niters', type=int, default=2000)
+parser.add_argument('--batch_size', type=int, default=10)
+parser.add_argument('--niters', type=int, default=5000)
 parser.add_argument('--test_freq', type=int, default=20)
 parser.add_argument('--viz', action='store_true')
-parser.add_argument('--gpu', type=int, default=0)
+parser.add_argument('--gpu', type=int, default=1)
 parser.add_argument('--adjoint', action='store_true')
 args = parser.parse_args()
 
-if args.adjoint:
-    from torchdiffeq import odeint_adjoint as odeint
-else:
-    from torchdiffeq import odeint
-
 device = torch.device('cuda:' + str(args.gpu) if torch.cuda.is_available() else 'cpu')
 
-demo_type = 1
+demo_type = 0
 if demo_type == 1:
     ####################################################
     ########## This is for the original demo ###########
     ####################################################
+    if args.adjoint:
+        from torchdiffeq import odeint_adjoint as odeint
+    else:
+        from torchdiffeq import odeint        
+
     # Generating the "ground-truth data" for the spiral example
     true_y0 = torch.tensor([[2., 0.]])
-    print(true_y0.shape)
+    # true_y0 = torch.tensor([[1., 0.]])
     t = torch.linspace(0., 25., args.data_size)
-    print(t.shape)
     true_A = torch.tensor([[-0.1, 2.0], [-2.0, -0.1]])
+    # true_A = torch.tensor([[-0.1, 2.0], [0.0, -0.1]])
     class Lambda(nn.Module):
 
         def forward(self, t, y):
@@ -78,29 +78,60 @@ else:
     ################################################################
     ########## Use data from drawn trajectories with GUI ###########
     ################################################################
-    # Load trajectories from file and plot
-    file_name = '../data/human_demonstrated_trajectories.dat'
-    file_name = '../data/human_demonstrated_trajectories_Mar22_22:33:43.dat'
-    l_,t_,x_,y_   = load_trajectories(file_name)
+    if args.adjoint:
+        from torchdiffeq import odeint_adjoint as odeint
+    else:
+        from torchdiffeq import odeint   
 
-    # Extract the first trajectory
-    l_0            = np.equal(np.array(l_), np.array([0]*len(l_)))
-    t_np           = abs(np.array(t_))
-    t_masked       = t_np[l_0]
-    true_y_np      = np.array([x_,y_]).transpose()
-    true_y_masked  = true_y_np[l_0,:]
-    true_y_masked  = true_y_masked[1:,:]
-    dim, data_size = true_y_masked.shape    
-    true_y_tensor  = true_y_masked[:,newaxis,:]
+    raw = 0
+    if raw == 1:
+        ############      From RAW Data     ############
+        # Load trajectories from file and plot
+        file_name = './data/human_demonstrated_trajectories.dat'
+        file_name = './data/human_demonstrated_trajectories_Mar22_22:33:43.dat'
+        l_,t_,x_,y_   = load_trajectories(file_name)
+        
+        # Extract the first trajectory
+        l_0            = np.equal(np.array(l_), np.array([0]*len(l_)))
+        t_np           = abs(np.array(t_))
+        t_masked       = t_np[l_0]
+        true_y_np      = np.array([x_,y_]).transpose()
+        true_y_masked  = true_y_np[l_0,:]
+        true_y_masked  = true_y_masked[1:,:]
+        dim, data_size = true_y_masked.shape    
+        true_y_tensor  = true_y_masked[:,newaxis,:]
 
-    
-    # Convert to torch!    
-    args.data_size  = 415
-    args.batch_size = 200
-    t               = torch.from_numpy(t_masked[1:]).float().to(device)
-    true_y0         = torch.tensor([[x_[0], y_[0]]])    
-    true_y          = torch.from_numpy(true_y_tensor).float().to(device)
-    
+        # Convert to torch!    
+        args.data_size  = 415
+        args.batch_size = 20
+        t               = torch.from_numpy(t_masked[1:]).float().to(device)
+        true_y0         = torch.tensor([[x_[0], y_[0]]])    
+        true_y          = torch.from_numpy(true_y_tensor).float().to(device)
+    else: 
+        ############      From Integrated DS     ############
+        #### Load learned DS for Semi spiral shape ####
+        models_dir = './models/'
+        model_name = 'test2.yml'
+        
+        # Load learned DS
+        lpv_ds     = lpv_DS(filename=models_dir+model_name,order_type='F')    
+        ds_fun     = lambda x: lpv_ds.get_ds(x)         
+
+        class LambdaDS(nn.Module):
+
+            def forward(self, t, y):
+                y_dot_np    = ds_fun(y.numpy().transpose())
+                y_dot_torch = torch.tensor([[y_dot_np[0], y_dot_np[1]]])    
+                return y_dot_torch
+
+        dt         = lpv_ds.get_dt()
+        x0_all     = lpv_ds.get_x0all()
+        true_y0    = torch.tensor([[x0_all[0,0], x0_all[1,0]]])
+
+        # integrate learned DS
+        t          = torch.linspace(0., dt/2*args.data_size, args.data_size)
+        true_y     = odeint(LambdaDS(), true_y0, t, method='dopri5')
+        # true_y     = odeint(LambdaDS(), true_y0, t, method='euler')
 
 def get_batch():
     some_value = np.arange(args.data_size - args.batch_time, dtype=np.int64)

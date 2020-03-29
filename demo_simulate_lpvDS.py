@@ -1,19 +1,27 @@
+import sys
 import numpy as np
 import numpy.linalg as LA
 import matplotlib.pyplot as plt
 from matplotlib import rc
+rc('font',**{'family':'serif','serif':['Times']})
+rc('text', usetex=True)
 
 # Dynamical System Tools
 from ds_tools.nonlinear_ds import *
 import ds_tools.mousetrajectory_gui as mt
+from scipy.integrate import odeint
 
-# ODE integration from pytorch (will only work with python-3)
-import sys
+# ODE integration from pytorch (will only work with python-3 and having torch installed)
+include_torchdiffeq = 0
 if sys.version_info.major == 3:
-    from torchdiffeq import odeint
-
-rc('font',**{'family':'serif','serif':['Times']})
-rc('text', usetex=True)
+    import importlib.util
+    package_name = 'torchdiffeq'
+    spec = importlib.util.find_spec(package_name)
+    if spec is None:
+        print(package_name +" is not installed")
+    else:     
+        from torchdiffeq import odeint
+        include_torchdiffeq = 1
 
 '''
  Brings up an empty world environment with the drawn trajectories using MouseTrajectory GUI
@@ -23,7 +31,7 @@ rc('text', usetex=True)
 def ds_eulerIntegration(ds_fun, dt, x0_all, attractor, max_iter, sim_tol):
     '''
      Generates forward integrated trajectories with the given DS from using 
-     first-order Euler integration method
+     first-order Euler integration method from multiple init conditions
     '''    
     dim, N_x0    = x0_all.shape        
     x_sim        = np.empty(shape=(N_x0*dim, max_iter))
@@ -87,12 +95,43 @@ if __name__ == '__main__':
         ##################################################################
         #   Integrate DS to generate forward trajectoriy from set of x0  #
         ##################################################################
+        ''' Solve a system of ordinary differential equations using Euler integration '''
         ds_fun     = lambda x: lpv_ds.get_ds(x)         
         dt         = lpv_ds.get_dt()
         max_iter   = 5000
         sim_tol    = 0.005 
-        x_sim      = ds_eulerIntegration(ds_fun, dt, x0_all, attractor, max_iter, sim_tol)
+        x_sim_eul  = ds_eulerIntegration(ds_fun, dt, x0_all, attractor, max_iter, sim_tol)
 
+        '''Solve a system of ordinary differential equations using LSODA method
+           LSODA: Adams/BDF method with automatic stiffness detection and switching [7], [8]. 
+           This is a wrapper of the Fortran solver from ODEPACK. 
+           To manually choose other methods we can use scipy.integrate.solve_ivp(..) instead
+           For better accuracy we can also provide the Jacobian of the DS. 
+        '''
+        ds_fun_sci = lambda x,t: lpv_ds.get_ds(x)         
+        int_time  = 5 #seconds 
+        max_steps = round(int_time/dt)
+        t         = np.linspace(0,int_time,max_steps)
+        dim, N_x0 = x0_all.shape 
+        x_sim_sci = np.empty(shape=(N_x0, max_steps, dim))
+        for ii in range(N_x0):
+            x_sim_sci[ii] = odeint(ds_fun_sci, x0_all[:,ii], t)
+        
+        '''  Solve a system of ordinary differential equations with the odeint() function 
+             from the torchdiffeq code (https://github.com/rtqichen/torchdiffeq)
+             Their approach sssumes ODE is non-stiff, not sure if that assumption 
+             is valid for our type of DS as the ratio of eigenvalues of the Jacobian might be high,
+             this can be checked!
+             Solver types listed here: https://github.com/rtqichen/torchdiffeq/blob/master/README.md
+        '''
+        if sys.version_info.major == 3:
+            class LambdaDS(nn.Module):
+                def forward(self, t, x):
+                    x_dot_np = ds_fun(y.numpy().transpose())
+                    x_dot    = torch.tensor([[y_dot_np[0], y_dot_np[1]]])    
+                    return x_dot
+            t_torch     = torch.linspace(0., int_time, max_steps)
+            x_sim_torch = odeint(LambdaDS(), torch.tensor([[x0_all[0,0], x0_all[1,0]]]), t_torch, method='dopri5')
 
     if show_stream_lines:
         ######################################################################
@@ -127,12 +166,11 @@ if __name__ == '__main__':
         ax1.plot(attractor[0], attractor[1], 'md', markersize=12, lw=2)
         ax1.plot(x0_all[0,:], x0_all[1,:], 'gs', markersize=10, lw=2)
 
-        if simulate_ds_integ:
-            # Add simulated trajectories used to learn DS
-            dim, N_x0  = x0_all.shape 
+        # Add simulated trajectories used to learn DS            
+        if simulate_ds_integ:            
             idx = 0
             for ii in range(N_x0):
-                ax1.plot(x_sim[0][idx,:], x_sim[0][idx+1,:], 'bo', markersize=2, lw=2)
+                ax1.plot(x_sim_eul[0][idx,:], x_sim_eul[0][idx+1,:], 'bo', markersize=2, lw=2)
                 idx=idx+dim
 
     if show_vector_field:
@@ -163,12 +201,12 @@ if __name__ == '__main__':
         ax0.plot(attractor[0], attractor[1], 'md', markersize=12, lw=2)
         ax0.plot(x0_all[0,:], x0_all[1,:], 'gs', markersize=10, lw=2)
 
+        # Add simulated trajectories used to learn DS            
         if simulate_ds_integ:
-            # Add simulated trajectories used to learn DS
             dim, N_x0  = x0_all.shape 
             idx = 0
             for ii in range(N_x0):
-                ax0.plot(x_sim[0][idx,:], x_sim[0][idx+1,:], 'bo', markersize=2, lw=2)
+                ax0.plot(x_sim_eul[0][idx,:], x_sim_eul[0][idx+1,:], 'bo', markersize=2, lw=2)
                 idx=idx+dim            
     # Show
     plt.show()
